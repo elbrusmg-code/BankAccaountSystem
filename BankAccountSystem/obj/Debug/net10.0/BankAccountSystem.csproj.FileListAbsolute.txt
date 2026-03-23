@@ -166,3 +166,4 @@ C:\Users\User\OneDrive\Documentos\codeacademy\BankAccountSystem\BankAccountSyste
 C:\Users\User\OneDrive\Documentos\codeacademy\BankAccountSystem\BankAccountSystem\obj\Debug\net10.0\ref\BankAccountSystem.dll
 C:\Users\User\OneDrive\Documentos\codeacademy\BankAccountSystem\BankAccountSystem\bin\Debug\net10.0\AutoMapper.Extensions.Microsoft.DependencyInjection.dll
 C:\Users\User\OneDrive\Documentos\codeacademy\BankAccountSystem\BankAccountSystem\bin\Debug\net10.0\appsettings.json
+C:\Users\User\OneDrive\Documentos\codeacademy\BankAccountSystem\BankAccountSystem\obj\Debug\net10.0\BankAccountSystem.sourcelink.json
