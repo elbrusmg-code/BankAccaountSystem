@@ -1,0 +1,16 @@
+<Solution>
+  <Folder Name="/BankApp/" />
+  <Folder Name="/BankApp/BusinessLogicLayer/">
+    <Project Path="BusinessLogic/BusinessLogic.csproj" Id="61bf1308-21fb-4b44-a914-2278231ed97e" />
+  </Folder>
+  <Folder Name="/BankApp/DataAccesLayerr/">
+    <Project Path="DataAccess/DataAccess.csproj" Id="5e0f7d14-b49d-425a-9b43-2c722924699b" />
+  </Folder>
+  <Folder Name="/BankApp/UI/">
+    <File Path="AccountMenu.cs" />
+    <File Path="CustomerMenu.cs" />
+    <File Path="MenuHandler.cs" />
+    <File Path="TransactionMenu.cs" />
+  </Folder>
+  <Project Path="BankAccountSystem/BankAccountSystem.csproj" />
+</Solution>
