@@ -1,0 +1,209 @@
+﻿using BusinessLogic.Dtos;
+using BusinessLogic.Services.Contract;
+using DataAccess.Models;
+using DataAccess.Models.Enums;
+using DataAccess.Reposi.Contracts;
+using Microsoft.EntityFrameworkCore;
+using BusinessLogic.Exceptions;
+
+namespace BusinessLogic.Services
+{
+    public class AccountService : IAccountService
+    {
+        private readonly IAccountRepos _accountRepos;
+        private readonly ITransactionRepos _transactionRepos;
+
+        public AccountService(IAccountRepos accountRepos, ITransactionRepos transactionRepos)
+        {
+            _accountRepos = accountRepos;
+            _transactionRepos = transactionRepos;
+        }
+
+        private AccountDto MapToDto(Account account)
+        {
+            return new AccountDto
+            {
+                Id = account.Id,
+                AccountNumber = account.AccountNumber,
+                AccountType = account.AccountType,
+                Balance = account.Balance,
+                Status = account.Status,
+                OpenedAt = account.OpenedAt,
+                ClosedAt = account.ClosedAt,
+                CustomerId = account.CustomerId,
+                CustomerFullName = account.Customer?.FullName ?? ""
+            };
+        }
+
+        public AccountDto? GetById(int id)
+        {
+            var account = _accountRepos.GetAll(
+                include: q => q.Include(a => a.Customer),
+                predicate: a => a.Id == id
+            ).FirstOrDefault();
+
+            return account == null ? null : MapToDto(account);
+        }
+
+        public AccountDto? GetByAccountNumber(string accountNumber)
+        {
+            var account = _accountRepos.GetAll(
+                include: q => q.Include(a => a.Customer),
+                predicate: a => a.AccountNumber == accountNumber
+            ).FirstOrDefault();
+
+            return account == null ? null : MapToDto(account);
+        }
+
+        public List<AccountDto> GetByCustomerId(int customerId)
+        {
+            var accounts = _accountRepos.GetAll(
+                include: q => q.Include(a => a.Customer),
+                predicate: a => a.CustomerId == customerId
+            );
+            return accounts.Select(MapToDto).ToList();
+        }
+
+        public List<AccountDto> GetAccountsAboveBalance(decimal threshold)
+        {
+            var accounts = _accountRepos.GetAll(
+                include: q => q.Include(a => a.Customer),
+                predicate: a => a.Balance > threshold && a.Status == AccountStatus.Active
+            );
+            return accounts.Select(MapToDto).ToList();
+        }
+
+        public void OpenAccount(CreateAccountDto dto)
+        {
+            var account = new Account
+            {
+                CustomerId = dto.CustomerId,
+                AccountType = dto.AccountType,
+                AccountNumber = "ACC" + DateTime.UtcNow.Ticks.ToString().Substring(0, 13),
+                Balance = 0,
+                Status = AccountStatus.Active,
+                OpenedAt = DateTime.UtcNow
+            };
+
+            _accountRepos.Add(account);
+        }
+
+        public void CloseAccount(int accountId)
+        {
+            var account = _accountRepos.GetById(accountId)
+                ?? throw new KeyNotFoundException("Hesab tapılmadı.");
+
+            if (account.Status == AccountStatus.Closed)
+                throw new AccountClosedException(accountId);
+
+            if (account.Balance != 0)
+                throw new InvalidOperationException("Hesabda qalıq var, bağlamaq olmaz.");
+
+            account.Status = AccountStatus.Closed;
+            account.ClosedAt = DateTime.UtcNow;
+            _accountRepos.Update(accountId, account);
+        }
+
+        public void Deposit(int accountId, decimal amount, string? description = null)
+        {
+            if (amount <= 0)
+                throw new ArgumentException("Məbləğ müsbət olmalıdır.");
+
+            var account = _accountRepos.GetById(accountId)
+                ?? throw new KeyNotFoundException("Hesab tapılmadı.");
+
+            if (account.Status == AccountStatus.Closed)
+                throw new AccountClosedException(accountId);
+
+            account.Balance += amount;
+            _accountRepos.Update(accountId, account);
+
+            _transactionRepos.Add(new Transaction
+            {
+                AccountId = accountId,
+                Type = TransactionType.Deposit,
+                Amount = amount,
+                BalanceAfter = account.Balance,
+                Description = description,
+                OccurredAt = DateTime.UtcNow
+            });
+        }
+
+        public void Withdraw(int accountId, decimal amount, string? description = null)
+        {
+            if (amount <= 0)
+                throw new ArgumentException("Məbləğ müsbət olmalıdır.");
+
+            var account = _accountRepos.GetById(accountId)
+                ?? throw new KeyNotFoundException("Hesab tapılmadı.");
+
+            if (account.Status == AccountStatus.Closed)
+                throw new AccountClosedException(accountId);
+
+            if (account.Balance < amount)
+                throw new InsufficientFundsException(accountId, account.Balance, amount);
+
+            account.Balance -= amount;
+            _accountRepos.Update(accountId, account);
+
+            _transactionRepos.Add(new Transaction
+            {
+                AccountId = accountId,
+                Type = TransactionType.Withdrawal,
+                Amount = amount,
+                BalanceAfter = account.Balance,
+                Description = description,
+                OccurredAt = DateTime.UtcNow
+            });
+        }
+
+        public void Transfer(int fromAccountId, int toAccountId, decimal amount, string? description = null)
+        {
+            if (amount <= 0)
+                throw new ArgumentException("Məbləğ müsbət olmalıdır.");
+
+            var from = _accountRepos.GetById(fromAccountId)
+                ?? throw new KeyNotFoundException("Göndərən hesab tapılmadı.");
+
+            var to = _accountRepos.GetById(toAccountId)
+                ?? throw new KeyNotFoundException("Alan hesab tapılmadı.");
+
+            if (from.Status == AccountStatus.Closed)
+                throw new AccountClosedException(fromAccountId);
+
+            if (to.Status == AccountStatus.Closed)
+                throw new AccountClosedException(toAccountId);
+
+            if (from.Balance < amount)
+                throw new InsufficientFundsException(fromAccountId, from.Balance, amount);
+
+            from.Balance -= amount;
+            to.Balance += amount;
+
+            _accountRepos.Update(fromAccountId, from);
+            _accountRepos.Update(toAccountId, to);
+
+            _transactionRepos.Add(new Transaction
+            {
+                AccountId = fromAccountId,
+                Type = TransactionType.Transfer,
+                Amount = amount,
+                BalanceAfter = from.Balance,
+                Description = description,
+                OccurredAt = DateTime.UtcNow,
+                RelatedAccountId = toAccountId
+            });
+
+            _transactionRepos.Add(new Transaction
+            {
+                AccountId = toAccountId,
+                Type = TransactionType.Transfer,
+                Amount = amount,
+                BalanceAfter = to.Balance,
+                Description = description,
+                OccurredAt = DateTime.UtcNow,
+                RelatedAccountId = fromAccountId
+            });
+        }
+    }
+}

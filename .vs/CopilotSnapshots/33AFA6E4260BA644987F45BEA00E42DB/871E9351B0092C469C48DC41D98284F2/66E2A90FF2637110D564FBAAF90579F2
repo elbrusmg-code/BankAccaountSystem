@@ -1,0 +1,33 @@
+﻿using DataAccess.Data;
+using DataAccess.Models;
+using DataAccess.Reposi.Contracts;
+using Microsoft.EntityFrameworkCore;
+using DataAccess.Models.Enums;
+namespace DataAccess.Reposi;
+
+public class TransactionRepository : EfCoreRepository<Transaction>, ITransactionRepos
+{
+    public TransactionRepository(BankContext context) : base(context) { }
+
+    public List<Transaction> GetByAccountId(int accountId)
+        => AppDbContext.Transactions
+            .Where(t => t.AccountId == accountId)
+            .OrderByDescending(t => t.OccurredAt)
+            .ToList();
+
+    public List<Transaction> GetLast30DaysDeposits()
+    {
+        var cutoff = DateTime.UtcNow.AddDays(-30);
+        return AppDbContext.Transactions
+            .Where(t => t.Type == TransactionType.Deposit && t.OccurredAt >= cutoff)
+            .ToList();
+    }
+
+    public List<Transaction> GetInactiveAccounts()
+    {
+        var cutoff = DateTime.UtcNow.AddDays(-90);
+        return AppDbContext.Transactions
+            .Where(t => t.OccurredAt < cutoff)
+            .ToList();
+    }
+}

@@ -1,0 +1,55 @@
+﻿using BusinessLogic.Dtos;
+using BusinessLogic.Services.Contract;
+using DataAccess.Models;
+using DataAccess.Reposi.Contracts;
+using Microsoft.EntityFrameworkCore;
+
+namespace BusinessLogic.Services
+{
+    public class TransactionService : ITransactionService
+    {
+        private readonly ITransactionRepos _transactionRepos;
+
+        public TransactionService(ITransactionRepos transactionRepos)
+        {
+            _transactionRepos = transactionRepos;
+        }
+
+        private TransactionDto MapToDto(Transaction transaction)
+        {
+            return new TransactionDto
+            {
+                Id = transaction.Id,
+                AccountId = transaction.AccountId,
+                AccountNumber = transaction.Account?.AccountNumber ?? "",
+                Type = transaction.Type,
+                Amount = transaction.Amount,
+                BalanceAfter = transaction.BalanceAfter,
+                Description = transaction.Description,
+                OccurredAt = transaction.OccurredAt,
+                RelatedAccountId = transaction.RelatedAccountId
+            };
+        }
+
+        public List<TransactionDto> GetByAccountId(int accountId)
+        {
+            var transactions = _transactionRepos.GetAll(
+                include: q => q.Include(t => t.Account),
+                predicate: t => t.AccountId == accountId
+            );
+            return transactions.Select(MapToDto).ToList();
+        }
+
+        public List<TransactionDto> GetLast30DaysDeposits()
+        {
+            var transactions = _transactionRepos.GetLast30DaysDeposits();
+            return transactions.Select(MapToDto).ToList();
+        }
+
+        public List<TransactionDto> GetInactiveAccounts()
+        {
+            var transactions = _transactionRepos.GetInactiveAccounts();
+            return transactions.Select(MapToDto).ToList();
+        }
+    }
+}

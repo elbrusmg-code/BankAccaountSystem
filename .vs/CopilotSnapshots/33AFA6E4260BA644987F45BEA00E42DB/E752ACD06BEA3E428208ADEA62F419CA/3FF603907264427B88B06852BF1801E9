@@ -1,0 +1,460 @@
+﻿using BusinessLogic.Dtos;
+using BusinessLogic.Exceptions;
+using BusinessLogic.Services.Contract;
+using DataAccess.Models.Enums;
+
+namespace BankAccountSystem.UI
+{
+    public class AccountMenu
+    {
+        private readonly IAccountService _accountService;
+        private readonly ICustomerService _customerService;
+
+        public AccountMenu(IAccountService accountService, ICustomerService customerService)
+        {
+            _accountService = accountService;
+            _customerService = customerService;
+        }
+
+        public void Show()
+        {
+            while (true)
+            {
+                MenuHandler.ShowHeader("HESAB İDARƏETMƏSİ");
+                MenuHandler.ShowMenuItem(1, "➕", "Yeni hesab aç");
+                MenuHandler.ShowMenuItem(2, "🔍", "Hesab nömrəsi ilə axtar");
+                MenuHandler.ShowMenuItem(3, "👤", "Müştərinin hesabları");
+                MenuHandler.ShowMenuItem(4, "💰", "Yüksək balansli hesablar");
+                MenuHandler.ShowMenuItem(5, "📥", "Depozit et");
+                MenuHandler.ShowMenuItem(6, "📤", "Çəkiliş et");
+                MenuHandler.ShowMenuItem(7, "🔄", "Transfer et");
+                MenuHandler.ShowMenuItem(8, "🔒", "Hesabı bağla");
+                MenuHandler.ShowMenuItem(9, "⚡", "Hesabı aktiv/deaktiv et");
+                MenuHandler.ShowExitItem(0);
+
+                var choice = MenuHandler.ReadMenuChoice(0, 9);
+
+                switch (choice)
+                {
+                    case 1: OpenAccount(); break;
+                    case 2: SearchByNumber(); break;
+                    case 3: GetByCustomerId(); break;
+                    case 4: GetAboveBalance(); break;
+                    case 5: Deposit(); break;
+                    case 6: Withdraw(); break;
+                    case 7: Transfer(); break;
+                    case 8: CloseAccount(); break;
+                    case 9: ToggleAccountStatus(); break;
+                    case 0: return;
+                }
+            }
+        }
+
+        private CustomerDto? SelectCustomer()
+        {
+            var customers = _customerService.GetAllActive(1, 100);
+            if (!customers.Any())
+            {
+                MenuHandler.ShowWarning("Heç bir aktiv müştəri tapılmadı.");
+                return null;
+            }
+
+            Console.WriteLine();
+            Console.ForegroundColor = ConsoleColor.DarkCyan;
+            Console.WriteLine("  Müştərilər:");
+            Console.ResetColor();
+
+            foreach (var c in customers.OrderBy(c => c.Id))
+            {
+                MenuHandler.ShowMenuItem(c.Id, "👤", $"{c.FullName} (FİN: {c.NationalId})");
+            }
+            Console.WriteLine();
+
+            while (true)
+            {
+                var input = MenuHandler.ReadInt("Müştəri ID seçin (0 - geri)");
+                if (input == 0) return null;
+                
+                var selected = customers.FirstOrDefault(c => c.Id == input);
+                if (selected != null)
+                    return selected;
+
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("  ✖  Sistemdə bu ID ilə aktiv müştəri yoxdur. Zəhmət olmasa siyahıdan seçin.");
+                Console.ResetColor();
+            }
+        }
+
+        private AccountDto? SelectAccount(CustomerDto customer, string prompt = "Hesab ID seçin (0 - geri)", bool includeInactive = false)
+        {
+            var accounts = _accountService.GetByCustomerId(customer.Id)
+                            .Where(a => a.Status == AccountStatus.Active || (includeInactive && a.Status == AccountStatus.Inactive))
+                            .ToList();
+
+            if (!accounts.Any())
+            {
+                MenuHandler.ShowWarning(includeInactive ? $"{customer.FullName} adlı müştərinin aktiv və ya inaktiv hesabı yoxdur." : $"{customer.FullName} adlı müştərinin aktiv hesabı yoxdur.");
+                return null;
+            }
+
+            Console.WriteLine();
+            Console.ForegroundColor = ConsoleColor.DarkCyan;
+            Console.WriteLine($"  {customer.FullName} adlı müştərinin Hesabları:");
+            Console.ResetColor();
+
+            foreach (var a in accounts.OrderBy(a => a.Id))
+            {
+                var statusText = a.Status == AccountStatus.Active ? "Aktiv" : "İnaktiv";
+                MenuHandler.ShowMenuItem(a.Id, "💳", $"{a.AccountNumber} - Növ: {a.AccountType} - Balans: {a.Balance:N2} AZN - Status: {statusText}");
+            }
+            Console.WriteLine();
+
+            while (true)
+            {
+                var input = MenuHandler.ReadInt(prompt);
+                if (input == 0) return null;
+
+                var account = accounts.FirstOrDefault(a => a.Id == input);
+                if (account != null) return account;
+
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("  ✖  Sistemdə bu ID ilə uyğun hesab yoxdur. Zəhmət olmasa siyahıdan seçin.");
+                Console.ResetColor();
+            }
+        }
+
+        private void OpenAccount()
+        {
+            MenuHandler.ShowHeader("YENİ HESAB AÇ");
+
+            var customer = SelectCustomer();
+            if (customer == null) return;
+
+            Console.WriteLine();
+            Console.ForegroundColor = ConsoleColor.DarkCyan;
+            Console.WriteLine($"  Seçilən müştəri: {customer.FullName} (FİN: {customer.NationalId})");
+            Console.WriteLine();
+            Console.WriteLine("  Hesab növü:");
+            Console.ResetColor();
+            MenuHandler.ShowMenuItem(1, "💳", "Cari hesab (Checking)");
+            MenuHandler.ShowMenuItem(2, "🏦", "Əmanət hesabı (Savings)");
+
+            var typeChoice = MenuHandler.ReadMenuChoice(1, 2);
+            var accountType = typeChoice == 1 ? AccountType.Checking : AccountType.Savings;
+
+            var dto = new CreateAccountDto
+            {
+                CustomerId = customer.Id,
+                AccountType = accountType
+            };
+
+            try
+            {
+                _accountService.OpenAccount(dto);
+                MenuHandler.ShowSuccess($"{customer.FullName} üçün hesab uğurla açıldı.");
+            }
+            catch (Exception ex)
+            {
+                MenuHandler.ShowError(ex.Message);
+            }
+        }
+
+        private void SearchByNumber()
+        {
+            MenuHandler.ShowHeader("HESAB NÖMRƏSI İLƏ AXTAR");
+
+            try
+            {
+                var accountNumber = MenuHandler.ReadInput("Hesab nömrəsi");
+                var account = _accountService.GetByAccountNumber(accountNumber);
+
+                if (account == null)
+                {
+                    MenuHandler.ShowWarning("Hesab tapılmadı.");
+                    return;
+                }
+
+                PrintAccount(account);
+                MenuHandler.ShowDivider();
+                Console.ReadLine();
+            }
+            catch (Exception ex)
+            {
+                MenuHandler.ShowError(ex.Message);
+            }
+        }
+
+        private void GetByCustomerId()
+        {
+            MenuHandler.ShowHeader("MÜŞTƏRİNİN HESABLARI");
+
+            try
+            {
+                var customerId = SelectCustomer();
+                if (customerId == 0) return;
+
+                var accounts = _accountService.GetByCustomerId(customerId);
+
+                if (!accounts.Any())
+                {
+                    MenuHandler.ShowWarning("Bu müştərinin heç bir hesabı tapılmadı.");
+                    return;
+                }
+
+                foreach (var a in accounts)
+                    PrintAccount(a);
+
+                MenuHandler.ShowDivider();
+                Console.ReadLine();
+            }
+            catch (Exception ex)
+            {
+                MenuHandler.ShowError(ex.Message);
+            }
+        }
+
+        private void GetAboveBalance()
+        {
+            MenuHandler.ShowHeader("YÜKSƏK BALANSLI HESABLAR");
+
+            try
+            {
+                var threshold = MenuHandler.ReadDecimal("Minimum balans");
+                var accounts = _accountService.GetAccountsAboveBalance(threshold);
+
+                if (!accounts.Any())
+                {
+                    MenuHandler.ShowWarning("Hesab tapılmadı.");
+                    return;
+                }
+
+                foreach (var a in accounts)
+                    PrintAccount(a);
+
+                MenuHandler.ShowDivider();
+                Console.ReadLine();
+            }
+            catch (Exception ex)
+            {
+                MenuHandler.ShowError(ex.Message);
+            }
+        }
+
+        private void Deposit()
+        {
+            MenuHandler.ShowHeader("DEPOZİT");
+
+            try
+            {
+                var customerId = SelectCustomer();
+                if (customerId == 0) return;
+
+                var account = SelectAccount(customerId);
+                if (account == null) return;
+
+                Console.WriteLine($"\n  Seçilən hesab: {account.AccountNumber} - {account.CustomerFullName} (Mövcud balans: {account.Balance:N2} AZN)\n");
+
+                var amount = MenuHandler.ReadDecimal("Məbləğ");
+                var description = MenuHandler.ReadInput("Açıqlama (boş buraxa bilərsiniz)");
+
+                _accountService.Deposit(account.Id, amount,
+                    string.IsNullOrEmpty(description) ? null : description);
+                MenuHandler.ShowSuccess($"{amount:N2} AZN uğurla hesaba köçürüldü.");
+            }
+            catch (AccountClosedException ex)
+            {
+                MenuHandler.ShowError(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                MenuHandler.ShowError(ex.Message);
+            }
+        }
+
+        private void Withdraw()
+        {
+            MenuHandler.ShowHeader("ÇƏKİLİŞ");
+
+            try
+            {
+                var customerId = SelectCustomer();
+                if (customerId == 0) return;
+
+                var account = SelectAccount(customerId);
+                if (account == null) return;
+
+                Console.WriteLine($"\n  Seçilən hesab: {account.AccountNumber} - {account.CustomerFullName} (Mövcud balans: {account.Balance:N2} AZN)\n");
+
+                var amount = MenuHandler.ReadDecimal("Məbləğ");
+                var description = MenuHandler.ReadInput("Açıqlama (boş buraxa bilərsiniz)");
+
+                _accountService.Withdraw(account.Id, amount,
+                    string.IsNullOrEmpty(description) ? null : description);
+                MenuHandler.ShowSuccess($"{amount:N2} AZN uğurla hesabdan çəkildi.");
+            }
+            catch (AccountClosedException ex)
+            {
+                MenuHandler.ShowError(ex.Message);
+            }
+            catch (InsufficientFundsException ex)
+            {
+                MenuHandler.ShowError(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                MenuHandler.ShowError(ex.Message);
+            }
+        }
+
+        private void Transfer()
+        {
+            MenuHandler.ShowHeader("TRANSFER");
+
+            try
+            {
+                Console.ForegroundColor = ConsoleColor.Magenta;
+                Console.WriteLine("\n  --- GÖNDƏRƏN MÜŞTƏRİ VƏ HESAB SEÇİMİ ---");
+                Console.ResetColor();
+
+                var fromCustomerId = SelectCustomer();
+                if (fromCustomerId == 0) return;
+
+                var fromAccount = SelectAccount(fromCustomerId, "Göndərən hesab ID seçin (0 - geri)");
+                if (fromAccount == null) return;
+                
+                Console.ForegroundColor = ConsoleColor.Magenta;
+                Console.WriteLine("\n  --- ALAN MÜŞTƏRİ VƏ HESAB SEÇİMİ ---");
+                Console.ResetColor();
+
+                var toCustomerId = SelectCustomer();
+                if (toCustomerId == 0) return;
+
+                var toAccount = SelectAccount(toCustomerId, "Alan hesab ID seçin (0 - geri)");
+                if (toAccount == null) return;
+
+                Console.WriteLine($"\n  Göndərən: {fromAccount.AccountNumber} - {fromAccount.CustomerFullName} (Balans: {fromAccount.Balance:N2} AZN)");
+                Console.WriteLine($"  Alan: {toAccount.AccountNumber} - {toAccount.CustomerFullName}\n");
+
+                var amount = MenuHandler.ReadDecimal("Məbləğ");
+                var description = MenuHandler.ReadInput("Açıqlama (boş buraxa bilərsiniz)");
+
+                if (!MenuHandler.Confirm($"{fromAccount.CustomerFullName} adlı şəxsdən {toAccount.CustomerFullName} adlı şəxsə {amount:N2} AZN transfer etmək istədiyinizdən əminsiniz?"))
+                {
+                    MenuHandler.ShowWarning("Əməliyyat ləğv edildi.");
+                    return;
+                }
+
+                _accountService.Transfer(fromAccount.Id, toAccount.Id, amount,
+                    string.IsNullOrEmpty(description) ? null : description);
+                MenuHandler.ShowSuccess($"{amount:N2} AZN uğurla transfer edildi.");
+            }
+            catch (AccountClosedException ex)
+            {
+                MenuHandler.ShowError(ex.Message);
+            }
+            catch (InsufficientFundsException ex)
+            {
+                MenuHandler.ShowError(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                MenuHandler.ShowError(ex.Message);
+            }
+        }
+
+        private void CloseAccount()
+        {
+            MenuHandler.ShowHeader("HESABI BAĞLA");
+
+            var customerId = SelectCustomer();
+            if (customerId == 0) return;
+
+            var account = SelectAccount(customerId, includeInactive: true);
+            if (account == null) return;
+
+            PrintAccount(account);
+            MenuHandler.ShowDivider();
+
+            if (!MenuHandler.Confirm("Hesabı bağlamaq istədiyinizdən əminsiniz?"))
+            {
+                MenuHandler.ShowWarning("Əməliyyat ləğv edildi.");
+                return;
+            }
+
+            try
+            {
+                _accountService.CloseAccount(account.Id);
+                MenuHandler.ShowSuccess("Hesab uğurla bağlandı.");
+            }
+            catch (AccountClosedException ex)
+            {
+                MenuHandler.ShowError(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                MenuHandler.ShowError(ex.Message);
+            }
+        }
+
+        private void ToggleAccountStatus()
+        {
+            MenuHandler.ShowHeader("HESABI AKTİV/DEAKTİV ET");
+
+            var customerId = SelectCustomer();
+            if (customerId == 0) return;
+
+            var account = SelectAccount(customerId, includeInactive: true);
+            if (account == null) return;
+
+            PrintAccount(account);
+            MenuHandler.ShowDivider();
+
+            try
+            {
+                if (account.Status == AccountStatus.Active)
+                {
+                    if (MenuHandler.Confirm("Bu hesab hal-hazırda Aktivdir. Deaktiv etmək istəyirsiniz?"))
+                    {
+                        _accountService.DeactivateAccount(account.Id);
+                        MenuHandler.ShowSuccess("Hesab uğurla deaktiv edildi.");
+                    }
+                    else
+                    {
+                        MenuHandler.ShowWarning("Əməliyyat ləğv edildi.");
+                    }
+                }
+                else if (account.Status == AccountStatus.Inactive)
+                {
+                    if (MenuHandler.Confirm("Bu hesab hal-hazırda İnaktivdir. Aktiv etmək istəyirsiniz?"))
+                    {
+                        _accountService.ActivateAccount(account.Id);
+                        MenuHandler.ShowSuccess("Hesab uğurla aktivləşdirildi.");
+                    }
+                    else
+                    {
+                        MenuHandler.ShowWarning("Əməliyyat ləğv edildi.");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MenuHandler.ShowError(ex.Message);
+            }
+        }
+
+        private static void PrintAccount(AccountDto a)
+        {
+            MenuHandler.ShowDivider();
+            MenuHandler.ShowInfo("ID:", a.Id.ToString());
+            MenuHandler.ShowInfo("Hesab nömrəsi:", a.AccountNumber);
+            MenuHandler.ShowInfo("Müştəri:", a.CustomerFullName);
+            MenuHandler.ShowInfo("Növ:", a.AccountType.ToString());
+            MenuHandler.ShowInfo("Balans:", $"{a.Balance:N2} AZN");
+            MenuHandler.ShowInfo("Status:", a.Status.ToString());
+            MenuHandler.ShowInfo("Açılış tarixi:", a.OpenedAt.ToString("dd.MM.yyyy HH:mm"));
+
+            if (a.ClosedAt.HasValue)
+                MenuHandler.ShowInfo("Bağlanış tarixi:", a.ClosedAt.Value.ToString("dd.MM.yyyy HH:mm"));
+        }
+    }
+}

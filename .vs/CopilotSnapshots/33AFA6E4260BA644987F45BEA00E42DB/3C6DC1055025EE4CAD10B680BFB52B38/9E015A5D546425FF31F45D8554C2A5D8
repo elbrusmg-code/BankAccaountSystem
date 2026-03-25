@@ -1,0 +1,128 @@
+﻿//using DataAccess.Data;
+//using Microsoft.EntityFrameworkCore;
+//using Microsoft.Extensions.Configuration;
+//using Microsoft.Extensions.DependencyInjection;
+
+//namespace BankAccountSystem;
+
+//internal class Program
+//{
+//    static async Task Main(string[] args)
+//    {
+//        // 1. appsettings.json oxu
+//        var configuration = new ConfigurationBuilder()
+//            .SetBasePath(Directory.GetCurrentDirectory())
+//            .AddJsonFile("appsettings.json")
+//            .Build();
+
+//        // 2. DI qeydiyyat
+//        var services = new ServiceCollection();
+
+//        services.AddDbContext<BankContext>(options =>
+//            options.UseSqlServer(
+//                configuration.GetConnectionString("Default")));
+
+//        var serviceProvider = services.BuildServiceProvider();
+
+//        // 3. Migration avtomatik işlə
+//        using (var scope = serviceProvider.CreateScope())
+//        {
+//            var context = scope.ServiceProvider
+//                               .GetRequiredService<BankContext>();
+//            await context.Database.MigrateAsync();
+//        }
+
+//        Console.WriteLine("Bank Account System işə düşdü!");
+//    }
+//}
+using BankAccountSystem.UI;
+using BusinessLogic.Services;
+using BusinessLogic.Services.Contract;
+using DataAccess.Data;
+using DataAccess.Reposi;
+using DataAccess.Reposi.Contracts;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+
+namespace BankAccountSystem;
+
+internal class Program
+{
+    static async Task Main(string[] args)
+    {
+        Console.OutputEncoding = System.Text.Encoding.UTF8;
+        Console.InputEncoding = System.Text.Encoding.UTF8;
+        // ─── 1. appsettings.json oxu ───────────────────────────────────
+        var configuration = new ConfigurationBuilder()
+            .SetBasePath(Directory.GetCurrentDirectory())
+            .AddJsonFile("appsettings.json")
+            .Build();
+
+        // ─── 2. DI qeydiyyat ───────────────────────────────────────────
+        var services = new ServiceCollection();
+
+        // DbContext
+        services.AddDbContext<BankContext>(options =>
+            options.UseSqlServer(
+                configuration.GetConnectionString("Default")));
+
+        // Repositories
+        services.AddScoped<ICustomerRepos, CustomerRepository>();
+        services.AddScoped<IAccountRepos, AccountRepository>();
+        services.AddScoped<ITransactionRepos, TransactionRepository>();
+
+        // Services
+        services.AddScoped<ICustomerService, CustomerService>();
+        services.AddScoped<IAccountService, AccountService>();
+        services.AddScoped<ITransactionService, TransactionService>();
+
+        var serviceProvider = services.BuildServiceProvider();
+
+        // ─── 3. Migration avtomatik işlə ──────────────────────────────
+        using (var scope = serviceProvider.CreateScope())
+        {
+            var context = scope.ServiceProvider
+                               .GetRequiredService<BankContext>();
+            await context.Database.MigrateAsync();
+        }
+
+        // ─── 4. Əsas menyu ────────────────────────────────────────────
+        while (true)
+        {
+            using var scope = serviceProvider.CreateScope();
+            var sp = scope.ServiceProvider;
+
+            MenuHandler.ShowHeader("ANA MENYU");
+            MenuHandler.ShowMenuItem(1, "👤", "Müştəri idarəetməsi");
+            MenuHandler.ShowMenuItem(2, "🏦", "Hesab idarəetməsi");
+            MenuHandler.ShowMenuItem(3, "💸", "Tranzaksiya idarəetməsi");
+            MenuHandler.ShowExitItem(0);
+
+            var choice = MenuHandler.ReadMenuChoice(0, 3);
+
+            switch (choice)
+            {
+                case 1:
+                    new CustomerMenu(sp.GetRequiredService<ICustomerService>()).Show();
+                    break;
+
+                case 2:
+                    new AccountMenu(sp.GetRequiredService<IAccountService>(), sp.GetRequiredService<ICustomerService>()).Show();
+                    break;
+
+                case 3:
+                    new TransactionMenu(sp.GetRequiredService<ITransactionService>()).Show();
+                    break;
+
+                case 0:
+                    MenuHandler.ShowHeader("ÇIXIŞ");
+                    Console.ForegroundColor = ConsoleColor.DarkGray;
+                    Console.WriteLine("  Sistemdən çıxılır...");
+                    Console.ResetColor();
+                    Console.WriteLine();
+                    return;
+            }
+        }
+    }
+}

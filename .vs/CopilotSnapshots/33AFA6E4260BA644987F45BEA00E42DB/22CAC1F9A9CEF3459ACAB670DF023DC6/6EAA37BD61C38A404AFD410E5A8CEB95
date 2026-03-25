@@ -1,0 +1,17 @@
+﻿using BusinessLogic.Dtos;
+
+namespace BusinessLogic.Services.Contract
+{
+    public interface IAccountService
+    {
+        AccountDto? GetById(int id);
+        AccountDto? GetByAccountNumber(string accountNumber);
+        List<AccountDto> GetByCustomerId(int customerId);
+        List<AccountDto> GetAccountsAboveBalance(decimal threshold);
+        void OpenAccount(CreateAccountDto dto);
+        void CloseAccount(int accountId);
+        void Deposit(int accountId, decimal amount, string? description = null);
+        void Withdraw(int accountId, decimal amount, string? description = null);
+        void Transfer(int fromAccountId, int toAccountId, decimal amount, string? description = null);
+    }
+}

@@ -204,10 +204,9 @@
               "RelativeDocumentMoniker": "BankAccountSystem\\UI\\TransactionMenu.cs",
               "ToolTip": "C:\\Users\\User\\OneDrive\\Documentos\\codeacademy\\BankAccountSystem\\BankAccountSystem\\UI\\TransactionMenu.cs",
               "RelativeToolTip": "BankAccountSystem\\UI\\TransactionMenu.cs",
-              "ViewState": "AgIAAI4AAAAAAAAAAEBVwAAAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAOIAAAAAAAAAAABRwAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-23T21:36:54.174Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-03-23T21:36:54.174Z"
             },
             {
               "$type": "Document",
@@ -217,10 +216,9 @@
               "RelativeDocumentMoniker": "BankAccountSystem\\UI\\CustomerMenu.cs",
               "ToolTip": "C:\\Users\\User\\OneDrive\\Documentos\\codeacademy\\BankAccountSystem\\BankAccountSystem\\UI\\CustomerMenu.cs",
               "RelativeToolTip": "BankAccountSystem\\UI\\CustomerMenu.cs",
-              "ViewState": "AgIAAPAAAAAAAAAAAEBVwAAAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAAoBAAAAAAAAAABRwAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-23T21:34:11.83Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-03-23T21:34:11.83Z"
             },
             {
               "$type": "Document",
@@ -230,7 +228,7 @@
               "RelativeDocumentMoniker": "..\\..\\..\\..\\AppData\\Local\\Temp\\VisualStudio\\copilot-vs\\plan-e4a6af33-0b26-44a6-987f-45bea00e42db.md",
               "ToolTip": "C:\\Users\\User\\AppData\\Local\\Temp\\VisualStudio\\copilot-vs\\plan-e4a6af33-0b26-44a6-987f-45bea00e42db.md [Read Only]",
               "RelativeToolTip": "..\\..\\..\\..\\AppData\\Local\\Temp\\VisualStudio\\copilot-vs\\plan-e4a6af33-0b26-44a6-987f-45bea00e42db.md [Read Only]",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001818|",
               "WhenOpened": "2026-03-23T21:32:04.864Z",
               "EditorCaption": " [Read Only]"
@@ -245,8 +243,7 @@
               "RelativeToolTip": "DataAccess\\Migrations\\20260323152644_InitialCreate.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABsAAAAlAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-23T15:26:44.757Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-03-23T15:26:44.757Z"
             },
             {
               "$type": "Document",
@@ -270,8 +267,7 @@
               "RelativeToolTip": "BankAccountSystem\\Program.cs",
               "ViewState": "AgIAAH4AAAAAAAAAAABBwH8AAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-22T17:30:05.594Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-03-22T17:30:05.594Z"
             },
             {
               "$type": "Document",
@@ -425,10 +421,9 @@
               "RelativeDocumentMoniker": "BankAccountSystem\\UI\\AccountMenu.cs",
               "ToolTip": "C:\\Users\\User\\OneDrive\\Documentos\\codeacademy\\BankAccountSystem\\BankAccountSystem\\UI\\AccountMenu.cs",
               "RelativeToolTip": "BankAccountSystem\\UI\\AccountMenu.cs",
-              "ViewState": "AgIAAJcBAAAAAAAAAABRwAAAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAM0BAAAAAAAAAABRwAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-23T14:57:03.949Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-03-23T14:57:03.949Z"
             },
             {
               "$type": "Document",
@@ -462,7 +457,7 @@
               "RelativeDocumentMoniker": "BusinessLogic\\Services\\Contract\\IAccountService.cs",
               "ToolTip": "C:\\Users\\User\\OneDrive\\Documentos\\codeacademy\\BankAccountSystem\\BusinessLogic\\Services\\Contract\\IAccountService.cs",
               "RelativeToolTip": "BusinessLogic\\Services\\Contract\\IAccountService.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABAAAAABAAAAAAAAAA==",
+              "ViewState": "AgIAAA8AAAAAAAAAAIBXwBIAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-03-22T18:15:21.391Z"
             },
@@ -474,10 +469,9 @@
               "RelativeDocumentMoniker": "BusinessLogic\\Services\\AccountService.cs",
               "ToolTip": "C:\\Users\\User\\OneDrive\\Documentos\\codeacademy\\BankAccountSystem\\BusinessLogic\\Services\\AccountService.cs",
               "RelativeToolTip": "BusinessLogic\\Services\\AccountService.cs",
-              "ViewState": "AgIAAMsAAAAAAAAAAIBZwNAAAAABAAAAAAAAAA==",
+              "ViewState": "AgIAAPUAAAAAAAAAAIBZwPoAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-22T18:14:06.297Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-03-22T18:14:06.297Z"
             },
             {
               "$type": "Document",
@@ -489,8 +483,7 @@
               "RelativeToolTip": "BusinessLogic\\Services\\CustomerService.cs",
               "ViewState": "AgIAAFwAAAAAAAAAAIBZwGEAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-22T18:13:51.993Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-03-22T18:13:51.993Z"
             },
             {
               "$type": "Document",
@@ -500,7 +493,7 @@
               "RelativeDocumentMoniker": "BusinessLogic\\Services\\TransactionService.cs",
               "ToolTip": "C:\\Users\\User\\OneDrive\\Documentos\\codeacademy\\BankAccountSystem\\BusinessLogic\\Services\\TransactionService.cs",
               "RelativeToolTip": "BusinessLogic\\Services\\TransactionService.cs",
-              "ViewState": "AgIAADMAAAAAAAAAAABRwDYAAAABAAAAAAAAAA==",
+              "ViewState": "AgIAADgAAAAAAAAAAEBVwDwAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-03-22T18:14:16.779Z",
               "EditorCaption": ""
@@ -561,7 +554,7 @@
               "RelativeDocumentMoniker": "DataAccess\\Models\\Enums\\AccountStatus.cs",
               "ToolTip": "C:\\Users\\User\\OneDrive\\Documentos\\codeacademy\\BankAccountSystem\\DataAccess\\Models\\Enums\\AccountStatus.cs",
               "RelativeToolTip": "DataAccess\\Models\\Enums\\AccountStatus.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAAoAAAAAAAAAAABRwA0AAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-03-22T17:58:14.081Z"
             },
@@ -609,9 +602,10 @@
               "RelativeDocumentMoniker": "DataAccess\\Reposi\\TransactionRepository.cs",
               "ToolTip": "C:\\Users\\User\\OneDrive\\Documentos\\codeacademy\\BankAccountSystem\\DataAccess\\Reposi\\TransactionRepository.cs",
               "RelativeToolTip": "DataAccess\\Reposi\\TransactionRepository.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAACAAAAABAAAAAAAAAA==",
+              "ViewState": "AgIAACAAAAAAAAAAAABRwCMAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-22T18:25:21.302Z"
+              "WhenOpened": "2026-03-22T18:25:21.302Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
